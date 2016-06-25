@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>domain_c</title>
+    <link rel="stylesheet" href="./styles/styles.css">
+    <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+    <script src="./scripts/ng-xdLocalStorage.min.js"></script>
+</head>
+<body ng-app="myApp">
+<h1 class="header">Cross Domain Local Storage</h1>
+<div class="content" ng-controller="ctrl">
+    <div>
+        <div class="label">Enter key name:</div>
+        <input id="keyInput" type="text" ng-model="keyInput"/></div>
+    <div>
+        <div class="label">Enter value:</div>
+        <input id="valueInput" type="text" ng-model="valueInput"/></div>
+    <button ng-click="setValue()">Set Value</button>
+
+    <div>
+        <div class="label">Enter key to get:</div>
+        <input id="getInput" type="text" ng-model="getInput"/></div>
+    <button ng-click="getItem()">Get Key</button>
+
+    <div>
+        <div class="label">Enter key to remove:</div>
+        <input id="removeInput" type="text" ng-model="removeInput"/></div>
+    <button ng-click="removeItem()">Remove Key</button>
+
+    <div>
+        <div class="label">Enter key index:</div>
+        <input id="keyNameInput" type="text" ng-model="keyNameInput"/></div>
+    <button ng-click="keyName()">Key</button>
+
+    <div>
+        <button ng-click="clearAll()">Clear all</button>
+    </div>
+
+    <div>
+        <div class="label">Result:</div>
+        <div id="result" ng-bind="result"></div>
+    </div>
+</div>
+</body>
+
+
+<script>
+    var myApp = angular.module ("myApp", ["xdLocalStorage"]);
+    myApp.run (function (xdLocalStorage) {
+        xdLocalStorage.init (
+                {
+                    iframeUrl: 'http://stage-m.bolo.me:8000/magic.html'
+                })
+                .then (function () {
+                    console.log ('Got iframe ready');
+                });
+    });
+
+    myApp.controller ("ctrl", ["$scope", "$timeout", "xdLocalStorage", function ($scope, $timeout, xdLocalStorage) {
+        $scope.setValue = function () {
+            $scope.result = '';
+            if ($scope.keyInput) {
+                xdLocalStorage.setItem ($scope.keyInput, $scope.valueInput)
+                        .then (function (data) {
+                            if (data.success) {
+                                $scope.result = "Your data has been successfully stored."
+                            }
+                        })
+            } else {
+                alert ('You must enter a key.');
+            }
+        }
+        $scope.getItem = function () {
+            $scope.result = '';
+            if ($scope.getInput) {
+                xdLocalStorage.getItem ($scope.getInput)
+                        .then (
+                                function (data) {
+                                    $timeout (function () {
+                                        $scope.result = 'got value: "' + data.value + '" for key: "' + data.key + '"';
+                                    }, 220)
+
+                                },
+                                function (data) {
+                                    console.log (data);
+                                });
+            } else {
+                alert ('You must enter a key to get.');
+            }
+        }
+        $scope.removeItem = function () {
+            $scope.result = ''
+            if ($scope.removeInput) {
+                xdLocalStorage.removeItem ($scope.removeInput)
+                        .then (
+                                function (data) {
+                                    $scope.result = 'Key was removed';
+                                }, function () {
+                                    $scope.result = "key haven\'t remove"
+                                });
+            }
+            else {
+                alert ('You must enter a key to remove.');
+            }
+        }
+        $scope.keyName = function () {
+            $scope.result = ''
+            var index = document.getElementById ("keyNameInput").value;
+            if ($scope.keyNameInput) {
+                xdLocalStorage.key ($scope.keyNameInput).then (
+                        function (data) {
+                            $scope.result = 'Key name for index ' + $scope.keyNameInput + ' is: ' + data.key;
+                        });
+            } else {
+                alert ('You must enter a key index.');
+            }
+        }
+        $scope.clearAll = function () {
+            $scope.result = ''
+            xdLocalStorage.clear ().then (function (data) {
+                $scope.result = 'LocalStorage was cleared.';
+            });
+        }
+    }])
+</script>
+</html>
