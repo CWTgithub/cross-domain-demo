@@ -1,5 +1,6 @@
 # cross-domain-demo
 跨域共用localstorage
+
 1、安装依赖
 ```
 $ npm install 
